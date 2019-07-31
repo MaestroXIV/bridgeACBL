@@ -1,0 +1,92 @@
+import requests
+link1 = "https://live.acbl.org/event/NABC192/LMO/"
+i = str(1)
+section = "A"
+link2 = "/board-detail/"
+link3 = "?board_num="
+j =str(1)
+link = link1 + i + link2 + section + link3+ j
+
+f = requests.get(link)
+board = f.text.split("\n")
+
+se12 = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R"]
+se34 = ["A","B","C","D","E","F","G","H"]
+se56 = ["G","H","I","J"]
+#podatki: potrebujemo stevilko boarda, stevilko seanse, karte in rezultate
+#stevilka boarda in seanse sta j in i
+
+def najdi(niz,podniz):
+    return(niz.index(podniz))
+def barva(niz):
+    niz = niz.replace(" ","")
+    return(niz)
+def roka(niz):
+    spade =niz.index("'spades symbol'></span>")
+    sl=len("'spades symbol'></span>")
+    konec = niz[spade+sl:].index("</span>")
+    karte = barva(niz[spade+sl:spade+sl+konec])
+    heart =niz.index("'hearts symbol'></span>")
+    hl=len("'hearts symbol'></span>")
+    konec = niz[heart+hl:].index("</span>")
+    karte = karte +"."+barva(niz[heart+hl:heart+hl+konec])
+    diamond =niz.index("'diams symbol'></span>")
+    dl=len("'diams symbol'></span>")
+    konec = niz[diamond+dl:].index("</span>")
+    karte =karte + "."+barva(niz[diamond+dl:diamond+dl+konec])
+    club =niz.index("'clubs symbol'></span>")
+    cl=len("'clubs symbol'></span>")
+    konec = niz[club+cl:].index("</span>")
+    karte = karte +"."+barva(niz[club+cl:club+cl+konec])
+    return(karte)
+
+def partija(sez):
+     izpis = '[Deal "N: '
+     N = sez.index("    \t\t\t\t<div class='hand'><!-- north hand -->")
+     E = sez.index("    \t\t\t\t\t<div class='inner-slice right'><!-- east hand -->")
+     S = sez.index("    \t\t\t\t<div class='hand'><!-- south hand -->")
+     W = sez.index("    \t\t\t\t\t<div class='inner-slice left'><!-- west hand -->")
+     izpis+= roka(sez[N+1])
+     izpis+=" " +roka(sez[E+1])
+     izpis+= " " +roka(sez[S+1])
+     izpis+= " " +roka(sez[W+1])+'"]'
+     return(izpis)
+     
+def rez(niz):
+    r = niz.index("Score")
+    k = niz[r+6:].index("&")
+    try:
+        return(int(niz[r+6:r+6+k]))
+    except:
+        return(0)
+    
+
+def rezultat(sez):
+    s = []
+    z = sez.index('\t                        <!-- <th>Results</th>  -->')
+    for i in range(13):
+        s.append(rez(sez[z+9+i*13]))
+    return(s)
+
+def izpis(board):
+    return([partija(board),rezultat(board)])
+    
+zapis = []  
+# seansa 1,2 A-R, 3,4 A-H, 5.6 G,H,I,J
+seanse = 1
+boardi = 26
+for i in range(seanse):
+    for j in range(boardi):
+        b = str(j+1)
+        print(b)
+        sea = str(i+1)
+        print(sea)
+        link = link = link1 + sea + link2 + b
+        board = requests.get(link).text.split("\n")
+        zapis.append([i+1,j+1,izpis(board)])
+        
+        
+        
+
+
+    
